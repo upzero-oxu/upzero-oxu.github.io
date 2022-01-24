@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>Centos部署</title>
-    <url>upzero-oxu.github.io/b2cf0fe9ca0e.html</url>
+    <url>/blog/b2cf0fe9ca0e.html</url>
     <content><![CDATA[<h2 id="yum安装自带的java"><a href="#yum安装自带的java" class="headerlink" title="yum安装自带的java"></a>yum安装自带的java</h2><p>1、先查看本地是否自带java环境：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">yum list installed |grep java</span><br></pre></td></tr></table></figure>
 <span id="more"></span>
@@ -70,7 +70,7 @@
   </entry>
   <entry>
     <title>docker基础手把手教程</title>
-    <url>upzero-oxu.github.io/8b0c0cf26e8f.html</url>
+    <url>/blog/8b0c0cf26e8f.html</url>
     <content><![CDATA[<h1 id="docker基础手把手教程"><a href="#docker基础手把手教程" class="headerlink" title="docker基础手把手教程"></a>docker基础手把手教程</h1><h2 id="使用centos7安装docker并配置环境"><a href="#使用centos7安装docker并配置环境" class="headerlink" title="使用centos7安装docker并配置环境"></a>使用centos7安装docker并配置环境</h2><ol>
 <li><p>更新yum包到最新</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum update</span><br></pre></td></tr></table></figure>
@@ -115,7 +115,7 @@
   </entry>
   <entry>
     <title>Git常用命令(一)</title>
-    <url>upzero-oxu.github.io/d9f74d6a6da1.html</url>
+    <url>/blog/d9f74d6a6da1.html</url>
     <content><![CDATA[<h1 id="git教程"><a href="#git教程" class="headerlink" title="git教程"></a>git教程</h1><ol>
 <li><p>查看一下本地分支    </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
@@ -136,7 +136,7 @@
   </entry>
   <entry>
     <title>Docker入门(一)</title>
-    <url>upzero-oxu.github.io/d79dc86e0af3.html</url>
+    <url>/blog/d79dc86e0af3.html</url>
     <content><![CDATA[<h2 id="Docker概述"><a href="#Docker概述" class="headerlink" title="Docker概述"></a>Docker概述</h2><h3 id="Docker为什么会出现"><a href="#Docker为什么会出现" class="headerlink" title="Docker为什么会出现"></a>Docker为什么会出现</h3><p>一款产品从开发到上线，从操作系统，到应用环境线上部署，再到应用配置，少不了开发和运维的协作，在这个过程中我们需要考虑很多东西。由于开发环境与生产环境等因素，我们可能经常会遇到“这个功能在我电脑能运行！”的问题；又或者产品版本更新后导致的服务不可用，而这对于运维人员是极大的考验！</p>
 <span id="more"></span>
 
