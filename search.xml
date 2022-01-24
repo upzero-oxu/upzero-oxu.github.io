@@ -1,51 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>docker基础手把手教程</title>
-    <url>/UpZero/blog/8b0c0cf26e8f.html</url>
-    <content><![CDATA[<h1 id="docker基础手把手教程"><a href="#docker基础手把手教程" class="headerlink" title="docker基础手把手教程"></a>docker基础手把手教程</h1><h2 id="使用centos7安装docker并配置环境"><a href="#使用centos7安装docker并配置环境" class="headerlink" title="使用centos7安装docker并配置环境"></a>使用centos7安装docker并配置环境</h2><ol>
-<li><p>更新yum包到最新</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum update</span><br></pre></td></tr></table></figure>
-<span id="more"></span></li>
-<li><p>卸载旧版本(如果安装过旧版本的话)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum remove docker docker-common docker-selinux docker-engine</span><br></pre></td></tr></table></figure></li>
-<li><p>安装需要的软件包， yum-util 提供yum-config-manager功能，另外两个是devicemapper驱动依赖的</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum install -y yum-utils device-mapper-persistent-data lvm2</span><br></pre></td></tr></table></figure></li>
-<li><p>设置yum源</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</span><br></pre></td></tr></table></figure></li>
-<li><p>可以查看所有仓库中所有docker版本，并选择特定版本安装,设置开机启动</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum list docker-ce --showduplicates | sort -r</span><br><span class="line">//安装docker</span><br><span class="line">yum install docker-ce</span><br><span class="line">启动并加入开机启动</span><br><span class="line">systemctl start docker</span><br><span class="line">systemctl enable docker</span><br></pre></td></tr></table></figure></li>
-<li><p><strong>修改docker镜像存放的位置 如：/home/docker 设置开放2375端口可以使项目直接构建为docker镜像(此操作容易使服务器变为“肉鸡”，建议内网使用)</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">停止docker服务</span><br><span class="line">systemctl stop docker</span><br><span class="line">设置docker镜像源</span><br><span class="line">mkdir -p /etc/docker</span><br><span class="line">vim /etc/docker/daemon.json</span><br><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [&quot;https://ihqa6erp.mirror.aliyuncs.com&quot;]</span><br><span class="line">&#125;</span><br><span class="line">修改docker服务启动文件</span><br><span class="line">vim /usr/lib/systemd/system/docker.service</span><br><span class="line">ExecStart=/usr/bin/dockerd -H unix://var/run/docker.sock --graph=/home/docker</span><br><span class="line">//添加idea连接2375端口</span><br><span class="line">ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --graph=/home/docker -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock</span><br><span class="line">重新加载配置并启动</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure></li>
-</ol>
-<h3 id="容器镜像的启动"><a href="#容器镜像的启动" class="headerlink" title="容器镜像的启动"></a>容器镜像的启动</h3>   <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">启动容器开启自启 加入 --restart=always </span><br><span class="line">no不自动重启容器. (默认value)</span><br><span class="line"></span><br><span class="line">on-failure 容器发生error而退出(容器退出状态不为0)重启容器</span><br><span class="line"></span><br><span class="line">unless-stopped 在容器已经stop掉或Docker stoped/restarted的时候才重启容器</span><br><span class="line"></span><br><span class="line">always 在容器已经stop掉或Docker stoped/restarted的时候才重启容器</span><br><span class="line"></span><br><span class="line">如果已经过运行的项目，使用update更新</span><br><span class="line">docker  update  --restart=always 容器名称</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="镜像启动的实例"><a href="#镜像启动的实例" class="headerlink" title="镜像启动的实例"></a>镜像启动的实例</h3><ol>
-<li><p>启动nacos(单机模式)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//--env MODE=standalone 单机模式</span><br><span class="line">docker pull nacos/nacos-server:1.4.0 \</span><br><span class="line">docker run --env MODE=standalone -d -p 8848:8848 --name nacos nacos/nacos-server:1.4.0</span><br></pre></td></tr></table></figure></li>
-<li><p>启动redis</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//--requirepass &quot;java@java&quot; 加上密码启动</span><br><span class="line">docker run -p 6379:6379 --name redis \</span><br><span class="line">-v /home/zhang/redis/data:/data \</span><br><span class="line">-d redis:5.0 redis-server --appendonly yes --requirepass &quot;java@java&quot; </span><br></pre></td></tr></table></figure></li>
-<li><p>启动Elasticsearch</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">chmod 777 /home/zhang/elasticsearch/data/</span><br><span class="line">docker run -p 9200:9200 -p 9300:9300 --name elasticsearch \</span><br><span class="line">-e &quot;discovery.type=single-node&quot; \</span><br><span class="line">-e &quot;cluster.name=elasticsearch&quot; \</span><br><span class="line">-v /home/zhang/elasticsearch/plugins:/usr/share/elasticsearch/plugins \</span><br><span class="line">-v /home/zhang/elasticsearch/data:/usr/share/elasticsearch/data \</span><br><span class="line">-d elasticsearch:7.6.2</span><br><span class="line">安装中文分词插件</span><br><span class="line">elasticsearch-plugin install http://192.168.1.26:8081/elasticsearch-analysis-ik-7.6.2.zip</span><br></pre></td></tr></table></figure></li>
-<li><p>启动Logstash</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run --name logstash -p 4560:4560 -p 4561:4561 -p 4562:4562 -p 4563:4563 \</span><br><span class="line">--link elasticsearch:es \</span><br><span class="line">-v /home/zhang/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf \</span><br><span class="line">-d logstash:7.6.2</span><br></pre></td></tr></table></figure></li>
-<li><p>启动Kibana</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//启动失败可以换为： -e &quot;elasticsearch.hosts=http://127.0.0.1:9200&quot; \</span><br><span class="line">docker run --name kibana -p 5601:5601 \</span><br><span class="line">--link elasticsearch:es \</span><br><span class="line">-e &quot;elasticsearch.hosts=http://es:9200&quot; \</span><br><span class="line">-d kibana:7.6.2</span><br></pre></td></tr></table></figure></li>
-<li><p>启动MongoDB</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run -p 27017:27017 --name mongo \</span><br><span class="line">-v /home/zhang/mongo/db:/data/db \</span><br><span class="line">-d mongo:4.2.5</span><br></pre></td></tr></table></figure></li>
-<li><p>启动RabbitMq</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">RabbitMq安装 3.8.9</span><br><span class="line">docker run -p 5672:5672 -p 15672:15672 --name rabbitmq \</span><br><span class="line">-d rabbitmq:3.8.9</span><br><span class="line">进入容器</span><br><span class="line">docker exec -it rabbitmq /bin/bash</span><br><span class="line">rabbitmq-plugins enable rabbitmq_management</span><br></pre></td></tr></table></figure></li>
-<li><p>启动nginx</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull nginx:1.19.0</span><br><span class="line"></span><br><span class="line">docker run -p 80:80 --name nginx_80 \</span><br><span class="line">-v /mydata/nginx/html:/usr/share/nginx/html \</span><br><span class="line">-v /mydata/nginx/logs:/var/log/nginx  \</span><br><span class="line">-d nginx:1.19.0</span><br><span class="line"></span><br><span class="line">将容器内的配置文件拷贝到指定目录：</span><br><span class="line">docker  cp nginx:/etc/nginx /mydata/nginx/</span><br><span class="line"></span><br><span class="line">修改文件名称：</span><br><span class="line">mv nginx conf</span><br><span class="line"></span><br><span class="line">终止并删除容器：</span><br><span class="line">docker stop nginx</span><br><span class="line">docker rm nginx</span><br><span class="line"></span><br><span class="line">重新启动外挂配置的nginx</span><br><span class="line">docker run -p 80:80 --name nginx_80 \</span><br><span class="line">-v /mydata/nginx/html:/usr/share/nginx/html \</span><br><span class="line">-v /mydata/nginx/logs:/var/log/nginx  \</span><br><span class="line">-v /mydata/nginx/conf:/etc/nginx \</span><br><span class="line">-d nginx:1.19.0</span><br></pre></td></tr></table></figure></li>
-<li><p>Mysql5.7安装</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull mysql:5.7</span><br><span class="line"></span><br><span class="line">启动MySQL</span><br><span class="line">docker run -p 3306:3306 --name mysql_3306 \</span><br><span class="line">-v /mydata/mysql/log:/var/log/mysql \</span><br><span class="line">-v /mydata/mysql/data:/var/lib/mysql \</span><br><span class="line">-v /mydata/mysql/conf:/etc/mysql \</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=root  \</span><br><span class="line">-d mysql:5.7</span><br><span class="line"></span><br><span class="line">-p 3306:3306：将容器的3306端口映射到主机的3306端口</span><br><span class="line">-v /mydata/mysql/conf:/etc/mysql：将配置文件夹挂在到主机</span><br><span class="line">-v /mydata/mysql/log:/var/log/mysql：将日志文件夹挂载到主机</span><br><span class="line">-v /mydata/mysql/data:/var/lib/mysql/：将数据文件夹挂载到主机</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=root：初始化root用户的密码</span><br></pre></td></tr></table></figure></li>
-</ol>
-]]></content>
-      <tags>
-        <tag>docker</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Centos部署</title>
     <url>/UpZero/blog/b2cf0fe9ca0e.html</url>
     <content><![CDATA[<h2 id="yum安装自带的java"><a href="#yum安装自带的java" class="headerlink" title="yum安装自带的java"></a>yum安装自带的java</h2><p>1、先查看本地是否自带java环境：</p>
@@ -111,6 +66,77 @@
       <tags>
         <tag>Linux</tag>
         <tag>java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>docker基础手把手教程</title>
+    <url>/UpZero/blog/8b0c0cf26e8f.html</url>
+    <content><![CDATA[<h1 id="docker基础手把手教程"><a href="#docker基础手把手教程" class="headerlink" title="docker基础手把手教程"></a>docker基础手把手教程</h1><h2 id="使用centos7安装docker并配置环境"><a href="#使用centos7安装docker并配置环境" class="headerlink" title="使用centos7安装docker并配置环境"></a>使用centos7安装docker并配置环境</h2><ol>
+<li><p>更新yum包到最新</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum update</span><br></pre></td></tr></table></figure>
+<span id="more"></span></li>
+<li><p>卸载旧版本(如果安装过旧版本的话)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum remove docker docker-common docker-selinux docker-engine</span><br></pre></td></tr></table></figure></li>
+<li><p>安装需要的软件包， yum-util 提供yum-config-manager功能，另外两个是devicemapper驱动依赖的</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum install -y yum-utils device-mapper-persistent-data lvm2</span><br></pre></td></tr></table></figure></li>
+<li><p>设置yum源</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</span><br></pre></td></tr></table></figure></li>
+<li><p>可以查看所有仓库中所有docker版本，并选择特定版本安装,设置开机启动</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum list docker-ce --showduplicates | sort -r</span><br><span class="line">//安装docker</span><br><span class="line">yum install docker-ce</span><br><span class="line">启动并加入开机启动</span><br><span class="line">systemctl start docker</span><br><span class="line">systemctl enable docker</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>修改docker镜像存放的位置 如：/home/docker 设置开放2375端口可以使项目直接构建为docker镜像(此操作容易使服务器变为“肉鸡”，建议内网使用)</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">停止docker服务</span><br><span class="line">systemctl stop docker</span><br><span class="line">设置docker镜像源</span><br><span class="line">mkdir -p /etc/docker</span><br><span class="line">vim /etc/docker/daemon.json</span><br><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [&quot;https://ihqa6erp.mirror.aliyuncs.com&quot;]</span><br><span class="line">&#125;</span><br><span class="line">修改docker服务启动文件</span><br><span class="line">vim /usr/lib/systemd/system/docker.service</span><br><span class="line">ExecStart=/usr/bin/dockerd -H unix://var/run/docker.sock --graph=/home/docker</span><br><span class="line">//添加idea连接2375端口</span><br><span class="line">ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --graph=/home/docker -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock</span><br><span class="line">重新加载配置并启动</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="容器镜像的启动"><a href="#容器镜像的启动" class="headerlink" title="容器镜像的启动"></a>容器镜像的启动</h3>   <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">启动容器开启自启 加入 --restart=always </span><br><span class="line">no不自动重启容器. (默认value)</span><br><span class="line"></span><br><span class="line">on-failure 容器发生error而退出(容器退出状态不为0)重启容器</span><br><span class="line"></span><br><span class="line">unless-stopped 在容器已经stop掉或Docker stoped/restarted的时候才重启容器</span><br><span class="line"></span><br><span class="line">always 在容器已经stop掉或Docker stoped/restarted的时候才重启容器</span><br><span class="line"></span><br><span class="line">如果已经过运行的项目，使用update更新</span><br><span class="line">docker  update  --restart=always 容器名称</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="镜像启动的实例"><a href="#镜像启动的实例" class="headerlink" title="镜像启动的实例"></a>镜像启动的实例</h3><ol>
+<li><p>启动nacos(单机模式)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//--env MODE=standalone 单机模式</span><br><span class="line">docker pull nacos/nacos-server:1.4.0 \</span><br><span class="line">docker run --env MODE=standalone -d -p 8848:8848 --name nacos nacos/nacos-server:1.4.0</span><br></pre></td></tr></table></figure></li>
+<li><p>启动redis</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//--requirepass &quot;java@java&quot; 加上密码启动</span><br><span class="line">docker run -p 6379:6379 --name redis \</span><br><span class="line">-v /home/zhang/redis/data:/data \</span><br><span class="line">-d redis:5.0 redis-server --appendonly yes --requirepass &quot;java@java&quot; </span><br></pre></td></tr></table></figure></li>
+<li><p>启动Elasticsearch</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">chmod 777 /home/zhang/elasticsearch/data/</span><br><span class="line">docker run -p 9200:9200 -p 9300:9300 --name elasticsearch \</span><br><span class="line">-e &quot;discovery.type=single-node&quot; \</span><br><span class="line">-e &quot;cluster.name=elasticsearch&quot; \</span><br><span class="line">-v /home/zhang/elasticsearch/plugins:/usr/share/elasticsearch/plugins \</span><br><span class="line">-v /home/zhang/elasticsearch/data:/usr/share/elasticsearch/data \</span><br><span class="line">-d elasticsearch:7.6.2</span><br><span class="line">安装中文分词插件</span><br><span class="line">elasticsearch-plugin install http://192.168.1.26:8081/elasticsearch-analysis-ik-7.6.2.zip</span><br></pre></td></tr></table></figure></li>
+<li><p>启动Logstash</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run --name logstash -p 4560:4560 -p 4561:4561 -p 4562:4562 -p 4563:4563 \</span><br><span class="line">--link elasticsearch:es \</span><br><span class="line">-v /home/zhang/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf \</span><br><span class="line">-d logstash:7.6.2</span><br></pre></td></tr></table></figure></li>
+<li><p>启动Kibana</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//启动失败可以换为： -e &quot;elasticsearch.hosts=http://127.0.0.1:9200&quot; \</span><br><span class="line">docker run --name kibana -p 5601:5601 \</span><br><span class="line">--link elasticsearch:es \</span><br><span class="line">-e &quot;elasticsearch.hosts=http://es:9200&quot; \</span><br><span class="line">-d kibana:7.6.2</span><br></pre></td></tr></table></figure></li>
+<li><p>启动MongoDB</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run -p 27017:27017 --name mongo \</span><br><span class="line">-v /home/zhang/mongo/db:/data/db \</span><br><span class="line">-d mongo:4.2.5</span><br></pre></td></tr></table></figure></li>
+<li><p>启动RabbitMq</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">RabbitMq安装 3.8.9</span><br><span class="line">docker run -p 5672:5672 -p 15672:15672 --name rabbitmq \</span><br><span class="line">-d rabbitmq:3.8.9</span><br><span class="line">进入容器</span><br><span class="line">docker exec -it rabbitmq /bin/bash</span><br><span class="line">rabbitmq-plugins enable rabbitmq_management</span><br></pre></td></tr></table></figure></li>
+<li><p>启动nginx</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull nginx:1.19.0</span><br><span class="line"></span><br><span class="line">docker run -p 80:80 --name nginx_80 \</span><br><span class="line">-v /mydata/nginx/html:/usr/share/nginx/html \</span><br><span class="line">-v /mydata/nginx/logs:/var/log/nginx  \</span><br><span class="line">-d nginx:1.19.0</span><br><span class="line"></span><br><span class="line">将容器内的配置文件拷贝到指定目录：</span><br><span class="line">docker  cp nginx:/etc/nginx /mydata/nginx/</span><br><span class="line"></span><br><span class="line">修改文件名称：</span><br><span class="line">mv nginx conf</span><br><span class="line"></span><br><span class="line">终止并删除容器：</span><br><span class="line">docker stop nginx</span><br><span class="line">docker rm nginx</span><br><span class="line"></span><br><span class="line">重新启动外挂配置的nginx</span><br><span class="line">docker run -p 80:80 --name nginx_80 \</span><br><span class="line">-v /mydata/nginx/html:/usr/share/nginx/html \</span><br><span class="line">-v /mydata/nginx/logs:/var/log/nginx  \</span><br><span class="line">-v /mydata/nginx/conf:/etc/nginx \</span><br><span class="line">-d nginx:1.19.0</span><br></pre></td></tr></table></figure></li>
+<li><p>Mysql5.7安装</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull mysql:5.7</span><br><span class="line"></span><br><span class="line">启动MySQL</span><br><span class="line">docker run -p 3306:3306 --name mysql_3306 \</span><br><span class="line">-v /mydata/mysql/log:/var/log/mysql \</span><br><span class="line">-v /mydata/mysql/data:/var/lib/mysql \</span><br><span class="line">-v /mydata/mysql/conf:/etc/mysql \</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=root  \</span><br><span class="line">-d mysql:5.7</span><br><span class="line"></span><br><span class="line">-p 3306:3306：将容器的3306端口映射到主机的3306端口</span><br><span class="line">-v /mydata/mysql/conf:/etc/mysql：将配置文件夹挂在到主机</span><br><span class="line">-v /mydata/mysql/log:/var/log/mysql：将日志文件夹挂载到主机</span><br><span class="line">-v /mydata/mysql/data:/var/lib/mysql/：将数据文件夹挂载到主机</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=root：初始化root用户的密码</span><br></pre></td></tr></table></figure></li>
+</ol>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>article title</title>
+    <url>/UpZero/blog/7c7c71393947.html</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Git常用命令(一)</title>
+    <url>/UpZero/blog/d9f74d6a6da1.html</url>
+    <content><![CDATA[<h1 id="git教程"><a href="#git教程" class="headerlink" title="git教程"></a>git教程</h1><ol>
+<li><p>查看一下本地分支    </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<p>查看本地和远程的所有分支</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -a</span><br></pre></td></tr></table></figure></li>
+<li><p>新建一个本地的分支</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -b newbranch   <span class="comment">//这个命令是新建一个分支，并切换到该分支上去</span></span><br><span class="line"></span><br><span class="line">（git branch newbranch;     git checkout newbranch）这两个命令合起来等同于上面的一个命令</span><br></pre></td></tr></table></figure></li>
+<li><p>新建一个远程分支（同名字的远程分支）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git push origin newbranch:newbranch   <span class="comment">//创建了一个远程分支名字叫 newbranch，origin为关键字</span></span><br></pre></td></tr></table></figure></li>
+<li><p>把本地的新分支，和远程的新分支关联</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git push --set-upstream origin newbranch</span><br></pre></td></tr></table></figure></li>
+</ol>
+]]></content>
+      <tags>
+        <tag>Git</tag>
       </tags>
   </entry>
   <entry>
@@ -357,31 +383,5 @@ condB(no)->opb1</textarea><textarea id="flowchart-0-options" style="display: non
       <tags>
         <tag>docker</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>Git常用命令(一)</title>
-    <url>/UpZero/blog/d9f74d6a6da1.html</url>
-    <content><![CDATA[<h1 id="git教程"><a href="#git教程" class="headerlink" title="git教程"></a>git教程</h1><ol>
-<li><p>查看一下本地分支    </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
-<span id="more"></span>
-<p>查看本地和远程的所有分支</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -a</span><br></pre></td></tr></table></figure></li>
-<li><p>新建一个本地的分支</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -b newbranch   <span class="comment">//这个命令是新建一个分支，并切换到该分支上去</span></span><br><span class="line"></span><br><span class="line">（git branch newbranch;     git checkout newbranch）这两个命令合起来等同于上面的一个命令</span><br></pre></td></tr></table></figure></li>
-<li><p>新建一个远程分支（同名字的远程分支）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git push origin newbranch:newbranch   <span class="comment">//创建了一个远程分支名字叫 newbranch，origin为关键字</span></span><br></pre></td></tr></table></figure></li>
-<li><p>把本地的新分支，和远程的新分支关联</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git push --set-upstream origin newbranch</span><br></pre></td></tr></table></figure></li>
-</ol>
-]]></content>
-      <tags>
-        <tag>Git</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>article title</title>
-    <url>/UpZero/blog/7c7c71393947.html</url>
-    <content><![CDATA[]]></content>
   </entry>
 </search>
