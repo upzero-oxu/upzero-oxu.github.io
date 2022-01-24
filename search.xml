@@ -69,6 +69,32 @@
       </tags>
   </entry>
   <entry>
+    <title>article title</title>
+    <url>/UpZero/blog/7c7c71393947.html</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Git常用命令(一)</title>
+    <url>/UpZero/blog/d9f74d6a6da1.html</url>
+    <content><![CDATA[<h1 id="git教程"><a href="#git教程" class="headerlink" title="git教程"></a>git教程</h1><ol>
+<li><p>查看一下本地分支    </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<p>查看本地和远程的所有分支</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -a</span><br></pre></td></tr></table></figure></li>
+<li><p>新建一个本地的分支</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -b newbranch   <span class="comment">//这个命令是新建一个分支，并切换到该分支上去</span></span><br><span class="line"></span><br><span class="line">（git branch newbranch;     git checkout newbranch）这两个命令合起来等同于上面的一个命令</span><br></pre></td></tr></table></figure></li>
+<li><p>新建一个远程分支（同名字的远程分支）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git push origin newbranch:newbranch   <span class="comment">//创建了一个远程分支名字叫 newbranch，origin为关键字</span></span><br></pre></td></tr></table></figure></li>
+<li><p>把本地的新分支，和远程的新分支关联</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git push --set-upstream origin newbranch</span><br></pre></td></tr></table></figure></li>
+</ol>
+]]></content>
+      <tags>
+        <tag>Git</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>docker基础手把手教程</title>
     <url>/UpZero/blog/8b0c0cf26e8f.html</url>
     <content><![CDATA[<h1 id="docker基础手把手教程"><a href="#docker基础手把手教程" class="headerlink" title="docker基础手把手教程"></a>docker基础手把手教程</h1><h2 id="使用centos7安装docker并配置环境"><a href="#使用centos7安装docker并配置环境" class="headerlink" title="使用centos7安装docker并配置环境"></a>使用centos7安装docker并配置环境</h2><ol>
@@ -111,32 +137,6 @@
 ]]></content>
       <tags>
         <tag>docker</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>article title</title>
-    <url>/UpZero/blog/7c7c71393947.html</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>Git常用命令(一)</title>
-    <url>/UpZero/blog/d9f74d6a6da1.html</url>
-    <content><![CDATA[<h1 id="git教程"><a href="#git教程" class="headerlink" title="git教程"></a>git教程</h1><ol>
-<li><p>查看一下本地分支    </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
-<span id="more"></span>
-<p>查看本地和远程的所有分支</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -a</span><br></pre></td></tr></table></figure></li>
-<li><p>新建一个本地的分支</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -b newbranch   <span class="comment">//这个命令是新建一个分支，并切换到该分支上去</span></span><br><span class="line"></span><br><span class="line">（git branch newbranch;     git checkout newbranch）这两个命令合起来等同于上面的一个命令</span><br></pre></td></tr></table></figure></li>
-<li><p>新建一个远程分支（同名字的远程分支）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git push origin newbranch:newbranch   <span class="comment">//创建了一个远程分支名字叫 newbranch，origin为关键字</span></span><br></pre></td></tr></table></figure></li>
-<li><p>把本地的新分支，和远程的新分支关联</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git push --set-upstream origin newbranch</span><br></pre></td></tr></table></figure></li>
-</ol>
-]]></content>
-      <tags>
-        <tag>Git</tag>
       </tags>
   </entry>
   <entry>
