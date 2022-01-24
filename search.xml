@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>docker基础手把手教程</title>
+    <url>/UpZero/blog/8b0c0cf26e8f.html</url>
+    <content><![CDATA[<h1 id="docker基础手把手教程"><a href="#docker基础手把手教程" class="headerlink" title="docker基础手把手教程"></a>docker基础手把手教程</h1><h2 id="使用centos7安装docker并配置环境"><a href="#使用centos7安装docker并配置环境" class="headerlink" title="使用centos7安装docker并配置环境"></a>使用centos7安装docker并配置环境</h2><ol>
+<li><p>更新yum包到最新</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum update</span><br></pre></td></tr></table></figure>
+<span id="more"></span></li>
+<li><p>卸载旧版本(如果安装过旧版本的话)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum remove docker docker-common docker-selinux docker-engine</span><br></pre></td></tr></table></figure></li>
+<li><p>安装需要的软件包， yum-util 提供yum-config-manager功能，另外两个是devicemapper驱动依赖的</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum install -y yum-utils device-mapper-persistent-data lvm2</span><br></pre></td></tr></table></figure></li>
+<li><p>设置yum源</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</span><br></pre></td></tr></table></figure></li>
+<li><p>可以查看所有仓库中所有docker版本，并选择特定版本安装,设置开机启动</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum list docker-ce --showduplicates | sort -r</span><br><span class="line">//安装docker</span><br><span class="line">yum install docker-ce</span><br><span class="line">启动并加入开机启动</span><br><span class="line">systemctl start docker</span><br><span class="line">systemctl enable docker</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>修改docker镜像存放的位置 如：/home/docker 设置开放2375端口可以使项目直接构建为docker镜像(此操作容易使服务器变为“肉鸡”，建议内网使用)</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">停止docker服务</span><br><span class="line">systemctl stop docker</span><br><span class="line">设置docker镜像源</span><br><span class="line">mkdir -p /etc/docker</span><br><span class="line">vim /etc/docker/daemon.json</span><br><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [&quot;https://ihqa6erp.mirror.aliyuncs.com&quot;]</span><br><span class="line">&#125;</span><br><span class="line">修改docker服务启动文件</span><br><span class="line">vim /usr/lib/systemd/system/docker.service</span><br><span class="line">ExecStart=/usr/bin/dockerd -H unix://var/run/docker.sock --graph=/home/docker</span><br><span class="line">//添加idea连接2375端口</span><br><span class="line">ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --graph=/home/docker -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock</span><br><span class="line">重新加载配置并启动</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="容器镜像的启动"><a href="#容器镜像的启动" class="headerlink" title="容器镜像的启动"></a>容器镜像的启动</h3>   <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">启动容器开启自启 加入 --restart=always </span><br><span class="line">no不自动重启容器. (默认value)</span><br><span class="line"></span><br><span class="line">on-failure 容器发生error而退出(容器退出状态不为0)重启容器</span><br><span class="line"></span><br><span class="line">unless-stopped 在容器已经stop掉或Docker stoped/restarted的时候才重启容器</span><br><span class="line"></span><br><span class="line">always 在容器已经stop掉或Docker stoped/restarted的时候才重启容器</span><br><span class="line"></span><br><span class="line">如果已经过运行的项目，使用update更新</span><br><span class="line">docker  update  --restart=always 容器名称</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="镜像启动的实例"><a href="#镜像启动的实例" class="headerlink" title="镜像启动的实例"></a>镜像启动的实例</h3><ol>
+<li><p>启动nacos(单机模式)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//--env MODE=standalone 单机模式</span><br><span class="line">docker pull nacos/nacos-server:1.4.0 \</span><br><span class="line">docker run --env MODE=standalone -d -p 8848:8848 --name nacos nacos/nacos-server:1.4.0</span><br></pre></td></tr></table></figure></li>
+<li><p>启动redis</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//--requirepass &quot;java@java&quot; 加上密码启动</span><br><span class="line">docker run -p 6379:6379 --name redis \</span><br><span class="line">-v /home/zhang/redis/data:/data \</span><br><span class="line">-d redis:5.0 redis-server --appendonly yes --requirepass &quot;java@java&quot; </span><br></pre></td></tr></table></figure></li>
+<li><p>启动Elasticsearch</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">chmod 777 /home/zhang/elasticsearch/data/</span><br><span class="line">docker run -p 9200:9200 -p 9300:9300 --name elasticsearch \</span><br><span class="line">-e &quot;discovery.type=single-node&quot; \</span><br><span class="line">-e &quot;cluster.name=elasticsearch&quot; \</span><br><span class="line">-v /home/zhang/elasticsearch/plugins:/usr/share/elasticsearch/plugins \</span><br><span class="line">-v /home/zhang/elasticsearch/data:/usr/share/elasticsearch/data \</span><br><span class="line">-d elasticsearch:7.6.2</span><br><span class="line">安装中文分词插件</span><br><span class="line">elasticsearch-plugin install http://192.168.1.26:8081/elasticsearch-analysis-ik-7.6.2.zip</span><br></pre></td></tr></table></figure></li>
+<li><p>启动Logstash</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run --name logstash -p 4560:4560 -p 4561:4561 -p 4562:4562 -p 4563:4563 \</span><br><span class="line">--link elasticsearch:es \</span><br><span class="line">-v /home/zhang/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf \</span><br><span class="line">-d logstash:7.6.2</span><br></pre></td></tr></table></figure></li>
+<li><p>启动Kibana</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">//启动失败可以换为： -e &quot;elasticsearch.hosts=http://127.0.0.1:9200&quot; \</span><br><span class="line">docker run --name kibana -p 5601:5601 \</span><br><span class="line">--link elasticsearch:es \</span><br><span class="line">-e &quot;elasticsearch.hosts=http://es:9200&quot; \</span><br><span class="line">-d kibana:7.6.2</span><br></pre></td></tr></table></figure></li>
+<li><p>启动MongoDB</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run -p 27017:27017 --name mongo \</span><br><span class="line">-v /home/zhang/mongo/db:/data/db \</span><br><span class="line">-d mongo:4.2.5</span><br></pre></td></tr></table></figure></li>
+<li><p>启动RabbitMq</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">RabbitMq安装 3.8.9</span><br><span class="line">docker run -p 5672:5672 -p 15672:15672 --name rabbitmq \</span><br><span class="line">-d rabbitmq:3.8.9</span><br><span class="line">进入容器</span><br><span class="line">docker exec -it rabbitmq /bin/bash</span><br><span class="line">rabbitmq-plugins enable rabbitmq_management</span><br></pre></td></tr></table></figure></li>
+<li><p>启动nginx</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull nginx:1.19.0</span><br><span class="line"></span><br><span class="line">docker run -p 80:80 --name nginx_80 \</span><br><span class="line">-v /mydata/nginx/html:/usr/share/nginx/html \</span><br><span class="line">-v /mydata/nginx/logs:/var/log/nginx  \</span><br><span class="line">-d nginx:1.19.0</span><br><span class="line"></span><br><span class="line">将容器内的配置文件拷贝到指定目录：</span><br><span class="line">docker  cp nginx:/etc/nginx /mydata/nginx/</span><br><span class="line"></span><br><span class="line">修改文件名称：</span><br><span class="line">mv nginx conf</span><br><span class="line"></span><br><span class="line">终止并删除容器：</span><br><span class="line">docker stop nginx</span><br><span class="line">docker rm nginx</span><br><span class="line"></span><br><span class="line">重新启动外挂配置的nginx</span><br><span class="line">docker run -p 80:80 --name nginx_80 \</span><br><span class="line">-v /mydata/nginx/html:/usr/share/nginx/html \</span><br><span class="line">-v /mydata/nginx/logs:/var/log/nginx  \</span><br><span class="line">-v /mydata/nginx/conf:/etc/nginx \</span><br><span class="line">-d nginx:1.19.0</span><br></pre></td></tr></table></figure></li>
+<li><p>Mysql5.7安装</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull mysql:5.7</span><br><span class="line"></span><br><span class="line">启动MySQL</span><br><span class="line">docker run -p 3306:3306 --name mysql_3306 \</span><br><span class="line">-v /mydata/mysql/log:/var/log/mysql \</span><br><span class="line">-v /mydata/mysql/data:/var/lib/mysql \</span><br><span class="line">-v /mydata/mysql/conf:/etc/mysql \</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=root  \</span><br><span class="line">-d mysql:5.7</span><br><span class="line"></span><br><span class="line">-p 3306:3306：将容器的3306端口映射到主机的3306端口</span><br><span class="line">-v /mydata/mysql/conf:/etc/mysql：将配置文件夹挂在到主机</span><br><span class="line">-v /mydata/mysql/log:/var/log/mysql：将日志文件夹挂载到主机</span><br><span class="line">-v /mydata/mysql/data:/var/lib/mysql/：将数据文件夹挂载到主机</span><br><span class="line">-e MYSQL_ROOT_PASSWORD=root：初始化root用户的密码</span><br></pre></td></tr></table></figure></li>
+</ol>
+]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Centos部署</title>
+    <url>/UpZero/blog/b2cf0fe9ca0e.html</url>
+    <content><![CDATA[<h2 id="yum安装自带的java"><a href="#yum安装自带的java" class="headerlink" title="yum安装自带的java"></a>yum安装自带的java</h2><p>1、先查看本地是否自带java环境：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">yum list installed |grep java</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<p>2、卸载自带的java（输入su，输入root超级管理员的密码，切换到root用户模式）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">yum -y remove java-<span class="number">1.8</span><span class="number">.0</span>-openjdk* </span><br><span class="line">yum -y remove tzdata-java*</span><br></pre></td></tr></table></figure>
+
+<p>3、查看yum仓库中的java安装包</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum -y list java*</span><br></pre></td></tr></table></figure>
+
+<p>4、安装java：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum -y install java-1.8.0-openjdk*</span><br></pre></td></tr></table></figure>
+
+<p>5、查找Java安装路径</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">which java</span><br><span class="line"></span><br><span class="line">ls -lrt /usr/bin/java（也就是上一步查询出来的路径），然后回车</span><br><span class="line"></span><br><span class="line">输入ls -lrt /etc/alternatives/java（也就是上一步查询出来的路径），然后回车</span><br><span class="line"></span><br><span class="line">从路径中可以看到在jvm目录下，输入cd /usr/lib/jvm，跳转到jvm的目录</span><br><span class="line"></span><br><span class="line">输入ls 列出当前目录下的文件和文件夹</span><br></pre></td></tr></table></figure>
+
+<p>6、配置环境</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">编辑环境变量</span><br><span class="line">vi /etc/profile</span><br><span class="line"></span><br><span class="line">添加如下：</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-1.8.0</span><br><span class="line">export JRE_HOME=$JAVA_HOME/jre  </span><br><span class="line">export PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin</span><br><span class="line">export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib</span><br><span class="line"></span><br><span class="line">刷新配置，立即生效</span><br><span class="line">source /etc/profile</span><br><span class="line"></span><br><span class="line">检查Java安装和配置情况 输入java -version</span><br></pre></td></tr></table></figure>
+
+<h3 id="通过下载jdk上传安装的步骤"><a href="#通过下载jdk上传安装的步骤" class="headerlink" title="通过下载jdk上传安装的步骤"></a>通过下载jdk上传安装的步骤</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.通过xshell上传jdk安装包</span><br><span class="line"></span><br><span class="line">2.tar -zxvf jdk-8u181-linux-x64.tar.gz 解压</span><br><span class="line"></span><br><span class="line">3.复制到一个文件夹：cp -r jdk1.8.0_181/ /opt/java/</span><br><span class="line"></span><br><span class="line">4.配置环境变量：同上</span><br><span class="line"></span><br><span class="line">5.source /etc/profile，使配置立即生效</span><br><span class="line"></span><br><span class="line"> 2.vi命令：</span><br><span class="line"></span><br><span class="line">   i:进入到插入模式 </span><br><span class="line"></span><br><span class="line">   esc:退出插入模式</span><br><span class="line"></span><br><span class="line">   :q! 退出不保存</span><br><span class="line"></span><br><span class="line">   :wq 保存退出</span><br></pre></td></tr></table></figure>
+
+<h2 id="2、centos安装nginx搭建http-flv流媒体"><a href="#2、centos安装nginx搭建http-flv流媒体" class="headerlink" title="2、centos安装nginx搭建http-flv流媒体"></a>2、centos安装nginx搭建http-flv流媒体</h2><p>1、首先安装依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum install -y gcc-c++pcre pcre-develzlib zlib-developenssl openssl-devel</span><br></pre></td></tr></table></figure>
+
+<p>下载nginx包并解压</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget http://nginx.org/download/nginx-1.18.0.tar.gz</span><br><span class="line">tar zxvf nginx-1.18.0.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>进入nginx目录 </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd nginx-1.18.0</span><br><span class="line">./configure --prefix=/usr/local/nginx</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<p>启动nginx</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd /usr/local/nginx/sbin</span><br><span class="line">./nginx</span><br></pre></td></tr></table></figure>
+
+<p>ip+默认端口80访问，能访问到就是成功了！</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">⚫ nginx -s stop ：快速关闭Nginx，可能不保存相关信息，并迅速终止web服务。</span><br><span class="line">⚫ nginx -s quit ：平稳关闭Nginx，保存相关信息，有安排的结束web服务。</span><br><span class="line">⚫ nginx -s reload ：因改变了Nginx相关配置，需要重新加载配置而重载。</span><br><span class="line">⚫ nginx -s reopen ：重新打开日志文件。</span><br><span class="line">⚫ nginx -c filename ：为 Nginx 指定一个配置文件，来代替缺省的。</span><br><span class="line">⚫ nginx -t ：不运行，而仅仅测试配置文件。nginx将检查配置文件的语法的正确性，并尝试打开配置文件中所引用到的 文件。</span><br><span class="line">⚫ nginx -v：显示 nginx 的版本。</span><br><span class="line">⚫ nginx -V：显示 nginx 的版本，编译器版本和配置参数</span><br></pre></td></tr></table></figure>
+
+<p>2、nginx：找不到指令</p>
+<p>​    进入 vim /etc/profile 文件编辑环境变量</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/my-install/nginx/sbin</span><br></pre></td></tr></table></figure>
+
+<p>3、加入http-flv模块</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">yum install -y unzip zip</span><br><span class="line">#下载rtmp包</span><br><span class="line">wget https://github.com/winshining/nginx-http-flv-module/archive/master.zip</span><br><span class="line">#解压下载包</span><br><span class="line">unzip -o master.zip</span><br><span class="line">#修改文件夹名</span><br><span class="line">mv nginx-http-flv-module-master nginx-http-flv-module</span><br></pre></td></tr></table></figure>
+
+<p>进入安装的nginx-1.18的目录</p>
+<p>将nginx-http-flv-module模板添加到nginx中，生成make文件 并安装nginx</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd /usr/local/my-insall/nginx-1.18.0</span><br><span class="line"></span><br><span class="line">./configure --prefix=/usr/local/my-insall/nginx  --add-module=/opt/tools/nginx-http-flv-module</span><br><span class="line"></span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<p>[^/usr/local/my-insall/nginx]: nginx安装后，执行nginx -V 可看到的一个路径，必须一样！</p>
+<p>centos7编译安装ffmpeg</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd /usr/local</span><br><span class="line"></span><br><span class="line">git clone  https://git.ffmpeg.org/ffmpeg.git</span><br><span class="line"></span><br><span class="line">cd ffmpeg</span><br><span class="line"></span><br><span class="line">./configure --prefix=/usr/local/ffmpeg --enable-gpl --enable-shared --enable-static --enable-libx264 --enable-pic --pkg-config=pkg-config </span><br><span class="line"></span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题一：</strong><br><code>WARNING: using libx264 without pkg-config</code></p>
+<p><code>libx264</code> 库没有找到<br>解决方法: 配置一下环境变量</p>
+<ul>
+<li><input disabled="" type="checkbox"> 查看pkg_config_path 环境命令   echo $PKG_CONFIG_PATH</li>
+<li><input disabled="" type="checkbox"> 查看自己的pkgconfig路径 find / -name pkgconfig</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">示例：</span><br><span class="line">export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH</span><br><span class="line">如果想覆盖原来的pkg，export PKG_CONFIG_LIBDIR=/usr/local/lib/pkgconfig</span><br><span class="line">PKG_CONFIG_LIBDIR的优先级比PKG_CONFIG_PATH高</span><br></pre></td></tr></table></figure>
+
+<p>指定的路径就是<code>x264</code>的安装路径, 在<code>lib</code>目录下面的<code>pkgconfig</code>目录</p>
+]]></content>
+      <tags>
+        <tag>Linux</tag>
+        <tag>java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker入门(一)</title>
+    <url>/UpZero/blog/d79dc86e0af3.html</url>
+    <content><![CDATA[<h2 id="Docker概述"><a href="#Docker概述" class="headerlink" title="Docker概述"></a>Docker概述</h2><h3 id="Docker为什么会出现"><a href="#Docker为什么会出现" class="headerlink" title="Docker为什么会出现"></a>Docker为什么会出现</h3><p>一款产品从开发到上线，从操作系统，到应用环境线上部署，再到应用配置，少不了开发和运维的协作，在这个过程中我们需要考虑很多东西。由于开发环境与生产环境等因素，我们可能经常会遇到“这个功能在我电脑能运行！”的问题；又或者产品版本更新后导致的服务不可用，而这对于运维人员是极大的考验！</p>
+<span id="more"></span>
+
+<p>相信很多小伙伴都是Windows系统开发，Linux系统发布上线，而发布一个jar或者war包时，服务器需要配置依赖环境(简单的jdk、mysql；复杂的Redis集群、ES、Hadoop…) ，简单的环境还好说，若是集群部署起来很是麻烦，况且Windows上的环境，到了Linux只能重新安装，无法进行跨平台使用；若是换服务器崩了，换一台服务器，环境又需要再次重新安装，费时又费力。</p>
+<p>于是就有人想到了，从根本上解决这个问题，软件产品带上环境进行安装打包！也就是说，开发可以将产品所需要的环境一起打包，这样部署就方便多了。</p>
+<p>就是<code>Docker</code>给出这样的一个解决方案！</p>
+<p>比方说，通过Java开发了一个项目，现在需要发布这个项目，开发人员在<u><strong>打包项目时带上环境（镜像）</strong></u>，将这个镜像放入Docker 的仓库里边，部署的时候只需要下载<u><strong>镜像</strong></u>，通过<u><strong>容器</strong></u>运行即可。</p>
+<p>Docker镜像的设计，使得Docker得以打破过去「程序即应用」的观念。通过Docker镜像 ( images ) 将应用程序所需要的系统环境，由下而上打包，达到应用程序跨平台间的无缝接轨运作。</p>
+<h3 id="Docker思想"><a href="#Docker思想" class="headerlink" title="Docker思想"></a>Docker思想</h3><p><img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic1.zhimg.com%2Fv2-a62710d971c47422f25eca254b2add8a_1440w.jpg%3Fsource%3D172ae18b&refer=http%3A%2F%2Fpic1.zhimg.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1645337108&t=61573c0314e2fbd4d0e0929d44323f26" alt="img"></p>
+<p>Docker的思想就来源于<u><strong>集装箱</strong></u>！</p>
+<p>什么是集装箱呢？其实就像运送货物的货船，各种各样的货物被集装箱标准化了，每一个箱子都是互相隔离的。比方说药物、化学品的货物，只需要根据类别封好箱，就可以了，不需要使用专门的船来运输了。</p>
+<p>比如以前jre环境下运行多个项目，可能会发生端口冲突等问题，这些个项目是交叉的（多个项目使用一套环境）,而现在 就要把每个项目的环境<strong>隔离</strong>出来。</p>
+<blockquote>
+<p><strong>通过Docker部署，不用再担心端口冲突，环境出问题影响其他项目等</strong></p>
+</blockquote>
+<p>隔离：docker的核心思想！就好比logo上的集装箱，把所有的东西(环境和项目打包成镜像)打包进行装箱！每个箱子都是互相隔离的。</p>
+<p>Docker通过隔离机制，可以将服务器利用到极致！</p>
+<p>Docker出现的本质：</p>
+<p>所有的技术都是因为出现了一些问题，我们需要去解决，才去学习。</p>
+<hr>
+<h3 id="Docker能干嘛"><a href="#Docker能干嘛" class="headerlink" title="Docker能干嘛?"></a>Docker能干嘛?</h3><h4 id="虚拟机技术"><a href="#虚拟机技术" class="headerlink" title="虚拟机技术"></a>虚拟机技术</h4><p>虚拟机（virtual machine）就是带环境安装的一种解决方案。</p>
+<p>它可以在一种操作系统里面运行另一种操作系统，比如在Windows 系统里面运行Linux 系统。应用程序对此毫无感知，因为虚拟机看上去跟真实系统一模一样，而对于底层系统来说，虚拟机就是一个普通文件，不需要了就删掉，对其他部分毫无影响。这类虚拟机完美的运行了另一套系统，能够使应用程序，操作系统和硬件三者之间的逻辑不变。</p>
+<p><img src="https://img-blog.csdnimg.cn/e63b7dc7d88448f2af666e95c9090ca6.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAaGUgfiB0dWk=,size_17,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<p>缺点：</p>
+<p>​        1、资源占用十分多（一个电脑一个电脑的虚拟）<br>​        2、冗余步骤多<br>​        3、启动很慢！</p>
+<h4 id="容器化技术"><a href="#容器化技术" class="headerlink" title="容器化技术"></a>容器化技术</h4><p>由于前面虚拟机存在这些缺点，Linux 发展出了另一种虚拟化技术：Linux 容器（Linux Containers，缩写为 LXC）。</p>
+<p>==容器化技术不是模拟的一个完成的操作系统==，而是</p>
+<p>容器包含了我们整个的运行环境以及应用，每个容器是互相隔离的，这些容器直接运行在操作系统之上，充分利用操作系统的资源</p>
+<p>比较docker和虚拟机技术的不同：</p>
+<ul>
+<li>传统虚拟机技术是虚拟出一个硬件，在上面运行一个完整的操作系统，然后在这个系统上安装和运行应用</li>
+<li>容器内的应用直接运行在宿主机的内核上，容器本身是没有自己的内核的，也没有虚拟硬件，所以就轻便了</li>
+<li>每个容器间都是隔离的，每个容器内都有一个属于自己的文件系统，互不影响。</li>
+</ul>
+<h4 id="DevOps（开发、运维）"><a href="#DevOps（开发、运维）" class="headerlink" title="DevOps（开发、运维）"></a>DevOps（开发、运维）</h4><p>四大特点：</p>
+<p><strong>应用更快速的交付和部署</strong></p>
+<p>传统：一堆帮助文档，安装文档以及程序等</p>
+<p>而现在Docker：打包镜像–》发布测试，一键运行</p>
+<p><strong>更便捷的升级和扩容</strong></p>
+<p>使用了Docker之后，部署应用就像搭积木一样！</p>
+<p>例如：项目打包为一个镜像，扩展（服务器A出现问题，在服务器B上直接运行即可）</p>
+<p><strong>更简单的系统运维</strong></p>
+<p>在容器化之后，我们的开发，测试环境都是高度一致的</p>
+<p><strong>更高效的计算资源利用</strong></p>
+<p>Docker是内核级别的虚拟化，可以再一个物理机上运行很多的容器实例！服务器的性能可以压榨到极致。</p>
+<h2 id="Docker安装"><a href="#Docker安装" class="headerlink" title="Docker安装"></a>Docker安装</h2><h3 id="Docker的基本组成"><a href="#Docker的基本组成" class="headerlink" title="Docker的基本组成"></a>Docker的基本组成</h3><p>镜像（image）、容器（container）、仓库（repository）</p>
+<p><img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimage1.bubuko.com%2Finfo%2F202005%2F20200520095109011066.png&refer=http%3A%2F%2Fimage1.bubuko.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1644026279&t=4c264cda72a740629ca9157f1588e357" alt="img"></p>
+<h3 id="安装Docker"><a href="#安装Docker" class="headerlink" title="安装Docker"></a>安装Docker</h3><p>帮助文档：<a href="https://docs.docker.com/engine/install/centos/">https://docs.docker.com/engine/install/centos/</a></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 1、卸载旧的版本</span></span><br><span class="line">yum remove docker \</span><br><span class="line">           docker-client \</span><br><span class="line">           docker-client-latest \</span><br><span class="line">           docker-common \</span><br><span class="line">           docker-latest \</span><br><span class="line">           docker-latest-logrotate \</span><br><span class="line">           docker-logrotate \</span><br><span class="line">           docker-engine</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 2、需要的安装包</span></span><br><span class="line">yum install -y yum-utils</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 3、设置镜像的仓库</span></span><br><span class="line">yum-config-manager \</span><br><span class="line">    --add-repo \</span><br><span class="line">    https://download.docker.com/linux/centos/docker-ce.repo  #默认是国外的！</span><br><span class="line">    </span><br><span class="line">yum-config-manager \</span><br><span class="line">    --add-repo \</span><br><span class="line">    http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo  #推荐使用阿里云的！</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">更新yum软件包索引</span></span><br><span class="line">yum makecache fast</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">4、安装docker docker-ce社区 ee企业版</span></span><br><span class="line">yum install docker-ce docker-ce-cli containerd.io</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">4.1列出存储库可用版本</span></span><br><span class="line">yum list docker-ce --showduplicates | sort -r</span><br><span class="line"><span class="meta">#</span><span class="bash">4.2指定版本安装 &lt;VERSION_STRING&gt;</span></span><br><span class="line">yum install docker-ce-&lt;VERSION_STRING&gt; docker-ce-cli-&lt;VERSION_STRING&gt; containerd.io</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">5、启动docker</span></span><br><span class="line">systemctl start docker</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">6、使用docker version查看是否安装成功</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20220106170656205.png" alt="image-20220106170656205"></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 7、通过运行hello-world 映像验证 Docker Engine 是否已正确安装。</span></span><br><span class="line">docker run hello-world</span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20220106171153536.png" alt="image-20220106171153536"></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 8、查看一下下载(pull)的 hello-world 镜像</span></span><br><span class="line">[root@xh my-install]# docker images</span><br><span class="line">REPOSITORY    TAG       IMAGE ID       CREATED        SIZE</span><br><span class="line">hello-world   latest    feb5d9fea6a5   3 months ago   13.3kB</span><br></pre></td></tr></table></figure>
+
+<h3 id="卸载Docker"><a href="#卸载Docker" class="headerlink" title="卸载Docker"></a>卸载Docker</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">1、卸载依赖</span></span><br><span class="line">yum remove docker-ce docker-ce-cli containerd.io</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">2、删除docker运行环境（资源） 删除所有镜像、容器和卷：</span></span><br><span class="line">rm -rf /var/lib/docker</span><br><span class="line">rm -rf /var/lib/containerd</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">  /var/lib/docker docker的默认资源路径！</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="阿里云镜像加速"><a href="#阿里云镜像加速" class="headerlink" title="阿里云镜像加速"></a>阿里云镜像加速</h3><blockquote>
+<p>有阿里云服务器的可登录阿里云服务器，找到<strong>容器镜像服务</strong></p>
+<p>点击“镜像加速器”</p>
+<p>根据操作系统，复制“镜像加速地址”</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir -p /etc/docker</span><br><span class="line"></span><br><span class="line">tee /etc/docker/daemon.json &lt;&lt;-&#x27;EOF&#x27;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [&quot;https://ihqa6erp.mirror.aliyuncs.com&quot;]</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"><span class="meta">#</span><span class="bash"> 重新加载配置并启动</span></span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="center">操作模块名</th>
+<th align="center">表示含义说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">start</td>
+<td align="center">开始</td>
+</tr>
+<tr>
+<td align="center">end</td>
+<td align="center">结束</td>
+</tr>
+<tr>
+<td align="center">operation</td>
+<td align="center">普通操作块</td>
+</tr>
+<tr>
+<td align="center">subroutine</td>
+<td align="center">子任务块</td>
+</tr>
+<tr>
+<td align="center">condition</td>
+<td align="center">判断块</td>
+</tr>
+<tr>
+<td align="center">inputoutput</td>
+<td align="center">输入输出块</td>
+</tr>
+</tbody></table>
+<h3 id="回顾Hello-World流程"><a href="#回顾Hello-World流程" class="headerlink" title="回顾Hello-World流程"></a>回顾Hello-World流程</h3><div id="flowchart-0" class="flow-chart"></div>
+
+
+
+<img src="C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20220106174016160.png" alt="run的运行流程图" />
+
+<h3 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h3><p><strong>Docker是什么工作的？</strong></p>
+<p>Docker是一个Client - Server 结构的系统，Docker的守护进程运行在主机上。通过Socket从客户端访问！</p>
+<p>Docker-Server 接受到Client端的指令，就会执行这个命令！</p>
+<p><img src="C:\Users\Admin\AppData\Roaming\Typora\typora-user-images\image-20220106180343885.png" alt="image-20220106180343885"></p>
+<p><strong>Docker为什么比 VM 快？</strong></p>
+<p>1、Docker有着比虚拟机更少的抽象层。</p>
+<p>2、dcoker 利用的是宿主机的内核，vm 需要是Guest OS</p>
+<p><img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fwww.adminadminpodcast.co.uk%2Fwp-content%2Fuploads%2F2016%2F09%2Fdockervsvm.jpg&refer=http%3A%2F%2Fwww.adminadminpodcast.co.uk&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1644056086&t=31b62459224faa5d4a39df8427738a62" alt="img"></p>
+<p>所以说，新建一个容器的时候，docker不需要像虚拟机一样重新加载一个操作系统内核，避免引导。虚拟机是加载 Guest OS ，分钟级别的，而 Docker是利用宿主机的操作系统，省略了再加载的这个复杂的过程，是秒级的！！</p>
+<h2 id="Docker的常用命令"><a href="#Docker的常用命令" class="headerlink" title="Docker的常用命令"></a>Docker的常用命令</h2><h3 id="帮助命令"><a href="#帮助命令" class="headerlink" title="帮助命令"></a>帮助命令</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker version  #显示docker的版本信息</span><br><span class="line">docker info     #显示docker的系统信息，包括镜像和容器的数量</span><br><span class="line">docker --help   #帮助命令</span><br></pre></td></tr></table></figure>
+
+<p>帮助命令文档的地址：<a href="https://docs.docker.com/reference/">https://docs.docker.com/reference/</a></p>
+<h3 id="镜像命令"><a href="#镜像命令" class="headerlink" title="镜像命令"></a>镜像命令</h3><p>地址：<a href="https://docs.docker.com/engine/reference/commandline/images/">https://docs.docker.com/engine/reference/commandline/images/</a></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看已安装镜像</span></span><br><span class="line">docker images</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 可选项</span></span><br><span class="line">	-a, --all		# 列出所有镜像</span><br><span class="line">	-q, --quiet		# 只显示镜像的id</span><br></pre></td></tr></table></figure>
+
+<p><strong>docker search 搜索镜像</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker search [镜像名称]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 可选项</span></span><br><span class="line">	--filter=STARS=3000  # 搜索出来得的镜像就是	STARS 大于3000的</span><br></pre></td></tr></table></figure>
+
+<p><strong>docker pull 拉取镜像</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 指定版本下载</span></span><br><span class="line">[root@xh my-install]# docker pull mysql:5.7</span><br><span class="line">5.7: Pulling from library/mysql  # 如果不写 tag.默认就是 latest</span><br><span class="line">72a69066d2fe: Pull complete   # 分层下载</span><br><span class="line">93619dbc5b36: Pull complete </span><br><span class="line">99da31dd6142: Pull complete </span><br><span class="line">626033c43d70: Pull complete </span><br><span class="line">37d5d7efb64e: Pull complete </span><br><span class="line">ac563158d721: Pull complete </span><br><span class="line">d2ba16033dad: Pull complete </span><br><span class="line">0ceb82207cd7: Pull complete </span><br><span class="line">37f2405cae96: Pull complete </span><br><span class="line">e2482e017e53: Pull complete </span><br><span class="line">70deed891d42: Pull complete </span><br><span class="line">Digest: sha256:f2ad209efe9c67104167fc609cca6973c8422939491c9345270175a300419f94 #签名</span><br><span class="line">Status: Downloaded newer image for mysql:5.7</span><br><span class="line">docker.io/library/mysql:5.7  # 真实地址</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 docker pull docker.io/library/mysql:5.7 也是一样的效果</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>docker rmi 删除镜像</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker rmi -f 镜像id/镜像名称  	# 删除指定的镜像</span><br><span class="line">docker rmi -f $(docker images -aq)  # 删除全部的镜像</span><br></pre></td></tr></table></figure>
+
+<h3 id="容器命令"><a href="#容器命令" class="headerlink" title="容器命令"></a>容器命令</h3><p><strong>说明：有镜像才可以创建容器</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 下载一个镜像，测试学习</span></span><br><span class="line">docker pull centos</span><br></pre></td></tr></table></figure>
+
+<p><strong>创建容器并启动</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run [可选参数] image</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 参数说明</span></span><br><span class="line">	--name=&quot;name&quot;	# 容器名字 tomcat01</span><br><span class="line">	-d				# 后台方式运行</span><br><span class="line">	-it				# 使用交互方式运行 进入容器查看内容</span><br><span class="line">	-p				# 指定容器的端口 如 -p 8080:8080</span><br><span class="line"><span class="meta">		#</span><span class="bash"> 用法：</span></span><br><span class="line">		-p ip:主机端口:容器端口</span><br><span class="line">		-p 主机端口:容器端口（常用）</span><br><span class="line">		-p 容器端口</span><br><span class="line">		容器端口</span><br><span class="line">	-p				# 随机指定端口</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 测试，启动并进入容器  /bin/sh 或者 /bin/bash</span></span><br><span class="line">①</span><br><span class="line">[root@xh my-install]# docker run -it centos /bin/sh</span><br><span class="line">sh-4.4# </span><br><span class="line"></span><br><span class="line">②</span><br><span class="line">[root@xh my-install]# docker run -it centos /bin/bash</span><br><span class="line">[root@9ce73334292f /]# </span><br></pre></td></tr></table></figure>
+
+<p><strong>列出所有运行中的容器</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker ps # 查看容器</span><br><span class="line">	-a	# 列出当前正在运行的容器+带出历史运行的容器</span><br><span class="line">	-n=?# 显示最近创建的容器</span><br><span class="line">	-q	# 只显示容器的编号</span><br></pre></td></tr></table></figure>
+
+<p><strong>退出容器</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">exit  # 退出并停止容器</span><br><span class="line">Ctrl + P + Q # 退出不停止容器</span><br></pre></td></tr></table></figure>
+
+<p><strong>删除容器</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker rm  容器id 	#删除指定的容器,不能删除正在运行的容器，如果要强制删除 rm -f</span><br><span class="line">docker rm -f $(docker ps -aq)  # 删除全部的容器</span><br><span class="line">docker ps -a -q|xargs docker rm # 删除全部的容器</span><br></pre></td></tr></table></figure>
+
+<p><strong>启动停止容器</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker start 容器id		# 启动容器</span><br><span class="line">docker restart 容器id		# 重启容器</span><br><span class="line">docker stop 容器id		# 停止当前正在运行的容器</span><br><span class="line">docker kill 容器id		# 杀掉并停止容器</span><br></pre></td></tr></table></figure>
+
+<h3 id="常用其他命令"><a href="#常用其他命令" class="headerlink" title="常用其他命令"></a>常用其他命令</h3><p><strong>后台启动容器</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run -d 镜像名</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 注意：使用上面命令启动容器，docker ps 发现容器停止了</span> </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 常见的坑：docker 容器使用后台运行，就必须有要一个前台进程，docker发现没有应用，就会自动停止</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> nginx，容器启动后，发现自己没有提供服务，就会立刻停止，就是没有程序了</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>查看日志</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker logs -tf --tail 10 容器id</span><br><span class="line">	-tf			# 显示全部</span><br><span class="line">	--tail number # 显示指定行数的日志</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 容器没有日志</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 自己编写一段shell脚本：每一秒打印一个语句</span></span><br><span class="line">&quot;while true;do echo hello-world!!;sleep 1&quot;</span><br><span class="line"></span><br><span class="line">docker run -d centos /bin/sh  \</span><br><span class="line">		-c &quot;while true;do echo hello-world!!;sleep 1;done&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>查看容器中的进程信息</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker top 容器id</span><br></pre></td></tr></table></figure>
+
+<p><strong>查看容器的元数据</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker inspect 镜像/容器id</span><br></pre></td></tr></table></figure>
+
+<p><strong>进入当前正在运行的容器</strong></p>
+<p>我们通常容器都是使用后台方式运行的，需要进入容器，修改一些配置</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker exec -it 容器id /bin/bash</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">进入正在执行的终端</span></span><br><span class="line">docker attach 容器id</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> docker <span class="built_in">exec</span>		<span class="comment"># 进入容器后开启一个新的终端，可以在里面操作（常用）</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> docker attach		<span class="comment"># 进入容器正在执行的终端，不会开启一个新的进程！</span></span></span><br></pre></td></tr></table></figure>
+
+<p><strong>从容器内拷贝文件到主机上</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker cp 容器id:容器内路径  目标主机路径</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">例子，进入容器内拷贝</span></span><br><span class="line">docker cp b78453025116:/home/test.java /home</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>小节</strong></p>
+<p>建议所有命令敲一遍，加深记忆</p>
+</blockquote>
+<p><img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg-blog.csdnimg.cn%2Fimg_convert%2Fe86543bb903f3f989485e4cb5e3e194e.png&refer=http%3A%2F%2Fimg-blog.csdnimg.cn&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1644400381&t=1600f6677cdc6b7f3b4b76c3c47ad345" alt="img"></p>
+<h3 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h3><blockquote>
+<p>作业1：部署nginx<br>   <strong>理解暴露端口的重要性</strong></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 搜索镜像</span></span><br><span class="line">docker search nginx</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 下载镜像</span></span><br><span class="line">docker pull ngnx</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建并运行容器</span></span><br><span class="line">docker run -d --name nginx01 -p 3344:80 nginx</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入容器</span></span><br><span class="line">docker exec -it nginx01 /bin/bash</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止容器</span></span><br><span class="line">docker stop 容器id</span><br></pre></td></tr></table></figure>
+
+<p>端口暴露的概念</p>
+<pre class="mermaid">flowchart BT
+    a["外网"] --- b["阿里云安全组"]
+    subgraph sua1[linux宿主机]
+        subgraph sub1[Docker服务]
+            subgraph suc1[nginx01]
+                c1[防火墙 80]
+            end
+            subgraph suc2[nginx02]
+                c2[防火墙 80]
+            end
+        end
+        c
+    end
+    b-->c["防火墙 3344"]-- -p 3344:80 --> c1
+    style c fill:#bbf,stroke:red,stroke-dasharray: 10,5</pre>
+
+<blockquote>
+<p>作业2：部署tomcat<br>   <strong>理解官方测试，以及如果进行容器的中重要性</strong></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 官方的使用</span>  </span><br><span class="line">docker run -it --rm tomcat:9.0</span><br></pre></td></tr></table></figure>
+
+<p><strong>我们之前的启动都是后天启动，停止容器之后，容器还是可以查得到<code>docker run -it --rm</code>一般用来测试，用完就删除</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 拉取镜像</span></span><br><span class="line">docker pull tomcat:9.0</span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建并启动容器</span></span><br><span class="line">docker run -d --name tomcat01 -p 3345:8080 tomcat:9.0</span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入容器</span></span><br><span class="line">docker exec -it tomcat01 /bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>？？在这有几个问题：</p>
+<ul>
+<li>linux命令变少了</li>
+<li>没有webapps</li>
+</ul>
+<p>原因：<br>    基于阿里云下载镜像，默认是最小的镜像，所有不必要的都剔除掉了<br>    保证最小可运行环境</p>
+<blockquote>
+<p>思考问题：要部署项目，需要进入容器？十分麻烦<br>我们可以在容器外部提供一个映射路径，达到在容器外部修改文件，可以在外部放置项目，自动同步到内部！！</p>
+</blockquote>
+<blockquote>
+<p>作业三： 部署es + kibana<br>   <strong>当前容器的存活状态，以及使用-e进行环境配置修改</strong></p>
+</blockquote>
+<p>问题：</p>
+<ul>
+<li>es 暴露的端口很多！</li>
+<li>es 极其耗内存！</li>
+<li>es 的数据一般需要放置到安全目录！挂载</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装并运行容器</span></span><br><span class="line"><span class="meta">	#</span><span class="bash"> -e	配置环境</span></span><br><span class="line">docker run -d --name elasticsearch01 -p 9200:9200 -p 9300:9300 elasticsearch:7.6.2</span><br></pre></td></tr></table></figure>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.6.5/flowchart.min.js"></script><textarea id="flowchart-0-code" style="display: none">st=>start: 开始
+op=>operation: Docker会在本机寻找镜像|current
+cond=>condition: 判断本机是否
+存在该镜像?
+opa1=>operation: 去Docker镜像仓库Docker Hub下载
+condB=>condition: Docker Hub是
+否存在该镜像?
+opb1=>operation: 返回错误，找不到这个镜像
+opb2=>operation: 下载这个镜像到本地
+e=>end: 直接使用这个镜像
+
+st->op->cond
+cond(yes)->e
+cond(no)->opa1
+opa1->condB
+condB(yes)->opb2(left)->e
+condB(no)->opb1</textarea><textarea id="flowchart-0-options" style="display: none">{"scale":1,"line-width":2,"line-length":50,"text-margin":10,"font-size":12}</textarea><script>  var code = document.getElementById("flowchart-0-code").value;  var options = JSON.parse(decodeURIComponent(document.getElementById("flowchart-0-options").value));  var diagram = flowchart.parse(code);  diagram.drawSVG("flowchart-0", options);</script>]]></content>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git常用命令(一)</title>
+    <url>/UpZero/blog/d9f74d6a6da1.html</url>
+    <content><![CDATA[<h1 id="git教程"><a href="#git教程" class="headerlink" title="git教程"></a>git教程</h1><ol>
+<li><p>查看一下本地分支    </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<p>查看本地和远程的所有分支</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -a</span><br></pre></td></tr></table></figure></li>
+<li><p>新建一个本地的分支</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git branch -b newbranch   <span class="comment">//这个命令是新建一个分支，并切换到该分支上去</span></span><br><span class="line"></span><br><span class="line">（git branch newbranch;     git checkout newbranch）这两个命令合起来等同于上面的一个命令</span><br></pre></td></tr></table></figure></li>
+<li><p>新建一个远程分支（同名字的远程分支）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">git push origin newbranch:newbranch   <span class="comment">//创建了一个远程分支名字叫 newbranch，origin为关键字</span></span><br></pre></td></tr></table></figure></li>
+<li><p>把本地的新分支，和远程的新分支关联</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git push --set-upstream origin newbranch</span><br></pre></td></tr></table></figure></li>
+</ol>
+]]></content>
+      <tags>
+        <tag>Git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>article title</title>
+    <url>/UpZero/blog/7c7c71393947.html</url>
+    <content><![CDATA[]]></content>
+  </entry>
+</search>
