@@ -635,6 +635,7 @@ code {
   border-radius: 3px;
   font-size: 0.875em;
   padding: 2px 4px;
+  background: #faebd7;
   overflow-wrap: break-word;
 }
 kbd {
