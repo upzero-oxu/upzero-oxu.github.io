@@ -629,7 +629,7 @@ pre figcaption a:hover {
 }
 pre,
 code {
-  font-family: Hack, Roboto Mono, Consolas, Monaco, Menlo, monospace, "Microsoft YaHei";
+  font-family: Hack, 'NOTO SANS SC';
 }
 code {
   border-radius: 3px;

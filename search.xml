@@ -1,39 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Docker入门(二)</title>
-    <url>/b31786ade29c.html</url>
-    <content><![CDATA[<h2 id="Docker-数据卷"><a href="#Docker-数据卷" class="headerlink" title="Docker 数据卷"></a>Docker 数据卷</h2><h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>Docker镜像是由多层<code>只读文件</code>系统叠加而成，当运行一个容器的时候，Docker只为在只读层上新增一个<code>读写层</code>。如果运行中的容器需要修改文件，那么并不会修改只读层的文件，只会把该文件复制到读写层进行修改。当我们删除了该容器之后，或者重启容器，之前对文件的修改都会丢失，镜像的只读层以及容器的读写曾被统称为<code>联合文件系统</code>（UnionFS）。</p>
-<p>为了实现容器与主机之前，容器与容器之间<code>数据共享</code>，容器中的<code>数据持久化</code>，Docker引入了<code>Volume（数据卷）</code>的机制，简单讲就是独立于联合文件系统，直接存在于宿主机上。</p>
-<h3 id="数据卷的特性"><a href="#数据卷的特性" class="headerlink" title="数据卷的特性"></a>数据卷的特性</h3><p>数据卷是一个可供一个或多个容器使用的特殊目录，它绕过UFS</p>
-<ul>
-<li>通过数据卷可以在容器之间实现共享和重用</li>
-<li>对数据卷的修改会立马生效(非常适合作为开发环境)</li>
-<li>对数据卷的更新,不会影响镜像</li>
-<li>卷会一直存在,直到没有容器使用</li>
-</ul>
-<p>【注意】：数据卷的使用，类似于Linux下对目录或文件进行mount，镜像中的被指定为挂载点的目录中的文件会隐藏掉，能显示看的是挂载的数据卷。</p>
-<h3 id="Docker数据管理"><a href="#Docker数据管理" class="headerlink" title="Docker数据管理"></a>Docker数据管理</h3><p>在容器中管理数据主要有两种方式：</p>
-<ul>
-<li><code>Volumes</code>（数据卷）：卷一般存储于<code>/var/ib/docker/volumes</code>卷是在Docker中持久化数据的最佳方式。</li>
-<li><code>Bind mounts</code>（绑定挂载）：可存储在主机的任意位置，非Docker进程也可随时修改。</li>
-<li><code>Tmpfs monut</code>：仅存储在主机系统的内存中，永远不会写入主机系统的文件系统。</li>
-</ul>
-<p><img src="https://upload-images.jianshu.io/upload_images/11227136-47fd0b8d371f3b33.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/502/format/webp" alt="挂载类型以及它们在 Docker 主机上的位置"></p>
-<h4 id="Volumes"><a href="#Volumes" class="headerlink" title="Volumes"></a>Volumes</h4><p>1、由<code>Docker</code>创建和管理，可以通过命令显示创建数据卷，或者Docker可以在容器创建或运行时创建卷。</p>
-<p>2、创建卷时，它存储在宿主机的目录上，当你把卷挂载到容器内，此目录就是挂载在容器中的目录，有点类型与绑定挂载，只是卷由Docker管理并且与主机核心隔离。</p>
-<p>3、创建的卷可以挂载到多个容器中，当没有正在运行的容器使用卷时，卷仍然可供Docker使用，不会自动删除。</p>
-<p>4、数据卷分为匿名卷和命名卷，匿名卷由Docker提供一个随机名称，保证唯一，可通过 inspect命令查看。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker volume create     # 创建数据卷对象</span><br><span class="line">docker volume inspect    # 查看数据卷的详细信息</span><br><span class="line">docker volume ls         # 查看已创建的数据卷对象</span><br><span class="line">docker volume prune      # 删除所有未被使用的数据卷对象</span><br><span class="line">docker volume rm         # 删除一个或多个数据卷对象</span><br></pre></td></tr></table></figure>
-
-<h4 id="Bind-mounts"><a href="#Bind-mounts" class="headerlink" title="Bind mounts"></a>Bind mounts</h4><p>通过Bind mounts挂载数据时，宿主机上的文件或者目录将载入到容器中。文件或目录由其在主机上的完整路径引用。</p>
-<p>用<code>volume</code>方式挂载的数据卷，实际上是创建了数据卷对象，可以用一下命令进行管理。（创建的数据卷对象一般存储于<code>/var/ib/docker/volumes</code>）</p>
-]]></content>
-      <tags>
-        <tag>docker</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Centos部署</title>
     <url>/b2cf0fe9ca0e.html</url>
     <content><![CDATA[<h2 id="yum安装自带的java"><a href="#yum安装自带的java" class="headerlink" title="yum安装自带的java"></a>yum安装自带的java</h2><p>1、先查看本地是否自带java环境：</p>
@@ -99,6 +66,39 @@
       <tags>
         <tag>Linux</tag>
         <tag>java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker入门(二)</title>
+    <url>/b31786ade29c.html</url>
+    <content><![CDATA[<h2 id="Docker-数据卷"><a href="#Docker-数据卷" class="headerlink" title="Docker 数据卷"></a>Docker 数据卷</h2><h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>Docker镜像是由多层<code>只读文件</code>系统叠加而成，当运行一个容器的时候，Docker只为在只读层上新增一个<code>读写层</code>。如果运行中的容器需要修改文件，那么并不会修改只读层的文件，只会把该文件复制到读写层进行修改。当我们删除了该容器之后，或者重启容器，之前对文件的修改都会丢失，镜像的只读层以及容器的读写曾被统称为<code>联合文件系统</code>（UnionFS）。</p>
+<p>为了实现容器与主机之前，容器与容器之间<code>数据共享</code>，容器中的<code>数据持久化</code>，Docker引入了<code>Volume（数据卷）</code>的机制，简单讲就是独立于联合文件系统，直接存在于宿主机上。</p>
+<h3 id="数据卷的特性"><a href="#数据卷的特性" class="headerlink" title="数据卷的特性"></a>数据卷的特性</h3><p>数据卷是一个可供一个或多个容器使用的特殊目录，它绕过UFS</p>
+<ul>
+<li>通过数据卷可以在容器之间实现共享和重用</li>
+<li>对数据卷的修改会立马生效(非常适合作为开发环境)</li>
+<li>对数据卷的更新,不会影响镜像</li>
+<li>卷会一直存在,直到没有容器使用</li>
+</ul>
+<p>【注意】：数据卷的使用，类似于Linux下对目录或文件进行mount，镜像中的被指定为挂载点的目录中的文件会隐藏掉，能显示看的是挂载的数据卷。</p>
+<h3 id="Docker数据管理"><a href="#Docker数据管理" class="headerlink" title="Docker数据管理"></a>Docker数据管理</h3><p>在容器中管理数据主要有两种方式：</p>
+<ul>
+<li><code>Volumes</code>（数据卷）：卷一般存储于<code>/var/ib/docker/volumes</code>卷是在Docker中持久化数据的最佳方式。</li>
+<li><code>Bind mounts</code>（绑定挂载）：可存储在主机的任意位置，非Docker进程也可随时修改。</li>
+<li><code>Tmpfs monut</code>：仅存储在主机系统的内存中，永远不会写入主机系统的文件系统。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/11227136-47fd0b8d371f3b33.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/502/format/webp" alt="挂载类型以及它们在 Docker 主机上的位置"></p>
+<h4 id="Volumes"><a href="#Volumes" class="headerlink" title="Volumes"></a>Volumes</h4><p>1、由<code>Docker</code>创建和管理，可以通过命令显示创建数据卷，或者Docker可以在容器创建或运行时创建卷。</p>
+<p>2、创建卷时，它存储在宿主机的目录上，当你把卷挂载到容器内，此目录就是挂载在容器中的目录，有点类型与绑定挂载，只是卷由Docker管理并且与主机核心隔离。</p>
+<p>3、创建的卷可以挂载到多个容器中，当没有正在运行的容器使用卷时，卷仍然可供Docker使用，不会自动删除。</p>
+<p>4、数据卷分为匿名卷和命名卷，匿名卷由Docker提供一个随机名称，保证唯一，可通过 inspect命令查看。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker volume create     # 创建数据卷对象</span><br><span class="line">docker volume inspect    # 查看数据卷的详细信息</span><br><span class="line">docker volume ls         # 查看已创建的数据卷对象</span><br><span class="line">docker volume prune      # 删除所有未被使用的数据卷对象</span><br><span class="line">docker volume rm         # 删除一个或多个数据卷对象</span><br></pre></td></tr></table></figure>
+
+<h4 id="Bind-mounts"><a href="#Bind-mounts" class="headerlink" title="Bind mounts"></a>Bind mounts</h4><p>通过Bind mounts挂载数据时，宿主机上的文件或者目录将载入到容器中。文件或目录由其在主机上的完整路径引用。</p>
+<p>用<code>volume</code>方式挂载的数据卷，实际上是创建了数据卷对象，可以用一下命令进行管理。（创建的数据卷对象一般存储于<code>/var/ib/docker/volumes</code>）</p>
+]]></content>
+      <tags>
+        <tag>docker</tag>
       </tags>
   </entry>
   <entry>
